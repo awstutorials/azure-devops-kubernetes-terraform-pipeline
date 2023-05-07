@@ -42,33 +42,71 @@ In the **subsequent step** of creating a Service Connection to Azure Kubernetes,
 
 1. Open your command prompt and execute the command **az login** .This will launch your browser and prompt you to select and log in to your desired account.
 
-2. Run the command 
+2. Run the command to get the credentials for AKS. This command automatically updates the config file in  **~/.kube/config**
 
-```
-az aks get-credentials --name <name of the kubernetes cluster created> --resource-group <name of the resource group> --admin;
-```
 
-3. run cat ~/.kube/config; this command will show you config file details.
-4. copy all content of files to your favourite text editor.
-5. go to your service connection and choose KubeConfig from top radio button.
-6. paste notepad's content in KubeConfig box.
-7. choose cluster context <name of the cluster>
-8. click on verify if its success then your job done. If you face any problems here, take a back up of the config file (~/.kube/config) and delete it. Run the command in step 2 again so that the config file contains only this kubernetes cluster.
-9. Give connection name and click on last checkbox for permission.
+**az aks get-credentials --name <name of the kubernetes cluster created> --resource-group <name of the resource group> --admin;**
+
+
+3. Execute the command **cat ~/.kube/config**. This displays the content of the file.
+
+4. Copy the entire content of file and paste it into your preferred text editor.
+
+5. Proceed to your **service connection** and choose **KubeConfig** option from top radio button.
+
+6. Paste the content from your text editor into the **KubeConfig** box.
+
+7. Choose the appropriate cluster context 
+
+8. Click on **verify** to check connection. 
+
+> If any issues arise, create a backup of the config file (~/.kube/config) and delete the original. Then, repeat step 2 to ensure that the config file only contains information for this specific Kubernetes cluster.
+
+9. Provide a connection name and check the last checkbox **Grant access permission for all pipelines** to enable permission for the pipelines to use this connection.
 
 
  # 159. Step 01 - Review Terraform Configuration for AWS EKS Cluster Creation
 
-AWS EKS has changed some of the configurations so we have udpated our repository with latest code.
+AWS EKS now needs a **TWO STEP process** to setup the cluster and create the policy bindings.
 
-1. The main.tf file now contains sections for creating EKS and then creating policy bindings after EKS is created. The sections which needs to be executed after the EKS creation are commented out now.
-2. Follow the instructions given in the video to create the EKS cluster. There is no change in that.
-3. Once the cluster is created, edit the main.tf and uncomment the sections marked as below
+**GOOD NEWS:** The Course Repository has been updated to incorporate the necessary changes
+
+Within the **main.tf** file, there are now designated sections to carry out the following actions:
+
+1. Creating EKS Cluster
+
+2. Establishing policy bindings following the creation of EKS.
+
+**WHAT SHOULD YOU DO?**
+
+Instead of a one step process, we would now need a two step process.
+
+**STEP 1: CREATE CLUSTER**
+
+NO CHANGE NEEDED!
+
+Follow instructions in THE NEXT STEP AS-IS!
+
+An EKS cluster should be created
+
+**STEP 2: ESTABLISH POLICY BINDINGS**
+
+1) After the cluster is created, edit **main.tf** - uncomment the sections marked as below:
+
+> //>>Uncomment this section once EKS is created - Start
+
+> //>>Uncomment this section once EKS is created - End
+
+2) To initiate the pipeline and generate the policy bindings, **commit** the modified **main.tf** file to your GitHub repository. Ensure that the final version of your **main.tf** file matches the contents of the file final-main.txt. 
+
+3) The provider kubernetes section should look like below
 
 ```
-//>>Uncomment this section once EKS is created - Start
-//>>Uncomment this section once EKS is created - End
+provider "kubernetes" {
+  //>>Uncomment this section once EKS is created - Start
+  host                   = data.aws_eks_cluster.cluster.endpoint #module.in28minutes-cluster.cluster_endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
+  //>>Uncomment this section once EKS is created - End
+}
 ```
-and commit the file again. This will trigger the pipeline and policy bindings will be created.
-
-4. Your final main.tf should look like the file final-main.txt in the same folder. You can compare your file with this one.
