@@ -97,16 +97,5 @@ An EKS cluster should be created
 
 > //>>Uncomment this section once EKS is created - End
 
-2) To initiate the pipeline and generate the policy bindings, **commit** the modified **main.tf** file to your GitHub repository. Ensure that the final version of your **main.tf** file matches the contents of the file final-main.txt. 
+2) To initiate the pipeline and generate the policy bindings, **commit** the modified **main.tf** file to your GitHub repository. Ensure that the final version of your **main.tf** file matches the contents of the file [final-main.txt](https://github.com/awstutorials/azure-devops-kubernetes-terraform-pipeline/blob/master/configuration/iaac/aws/kubernetes/final-main.txt). 
 
-3) The provider kubernetes section should look like below
-
-```
-provider "kubernetes" {
-  //>>Uncomment this section once EKS is created - Start
-  host                   = data.aws_eks_cluster.cluster.endpoint #module.in28minutes-cluster.cluster_endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
-  //>>Uncomment this section once EKS is created - End
-}
-```
