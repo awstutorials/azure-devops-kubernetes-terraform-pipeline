@@ -1,18 +1,53 @@
 # 148.Step 03 - Creating Azure DevOps Pipeline for Azure Kubernetes Cluster IAAC. 
-When you create a service connection to azure resource manager, the screens changed a bit. Choose Azure Resource Manager as explained in the video and the next screens look as below
-1. Choose option Service Principle (Automatic)
+
+**QUICK NOTE**
+
+In the **subsequent step** of creating a Service Connection to Azure Resource Manager, please be aware that the user interface screens have been updated and may appear different.
+
+**WHAT SHOULD YOU DO?**
+
+Choose Azure Resource Manager as explained in the next video and choose options as shown below:
+
 ![How to create a new service connection](./images/azure-devops-new-azure-resourcemanager-serviceconnection.png)
-2. Choose the azure subscription from drop down, leave Resource Group Empty, provide the service connection name ![How to create a new service connection](./images/azure-devops-new-azure-resourcemanager-serviceconnection-02.png)
-Also choose Grand access permission to all pipelines and click Save
+
+1. Choose the option **Service Principle (Automatic)** and click **Next**
+
+The next screen appears like this
+
+![How to create a new service connection](./images/azure-devops-new-azure-resourcemanager-serviceconnection-02.png)
+
+2. Choose the **azure subscription** from drop down
+
+3. Leave the **Resource Group** Empty
+
+4. Provide the service connection name as **azure-resource-manager-service-connection** 
+
+5. Choose **Grand access permission to all pipelines** and click **Save**
 
 # 152. Step 06 - Creating Azure DevOps Pipeline for Deploying Microservice to Azure AKS 1:30
 
-Creating service connection for Kubernetes has to be done differently because of the open issue.
+**QUICK NOTE**
+
+The upcoming step involves the creation of a service connection for Kubernetes.
+
+However, due to an unresolved issue, the steps must be modified slightly.
+
+**WHAT SHOULD YOU DO?**
+
+In the **subsequent step** of creating a Service Connection to Azure Kubernetes, we need to use **KubeConfig** option instead of **Azure Subscription**
 
 ![How to create a new service connection](./images/azure-aks-connection.png)
 
-1. Do az login in your cmd. This will open up your browser and need to select the account and log in.
-2. run az aks get-credentials --name <name of the kubernetes cluster created> --resource-group <name of the resource group> --admin;
+**HOW TO GET KUBE CONFIG FOR AKS?**
+
+1. Open your command prompt and execute the command **az login** .This will launch your browser and prompt you to select and log in to your desired account.
+
+2. Run the command 
+
+```
+az aks get-credentials --name <name of the kubernetes cluster created> --resource-group <name of the resource group> --admin;
+```
+
 3. run cat ~/.kube/config; this command will show you config file details.
 4. copy all content of files to your favourite text editor.
 5. go to your service connection and choose KubeConfig from top radio button.
