@@ -23,10 +23,10 @@ steps:
     workingDirectory: '$(System.DefaultWorkingDirectory)/configuration/iaac/azure/kubernetes'
     backendAzureRmUseEntraIdForAuthentication: false
     backendServiceArm: 'azure-resource-manager-service-connection'
-    backendAzureRmResourceGroupName: 'terraform-backend-rg'
-    backendAzureRmStorageAccountName: 'storageacctrangaxyz'
-    backendAzureRmContainerName: 'storageacctrangacontainer'
-    backendAzureRmKey: 'kubernetes-dev.tfstate'
+    backendAzureRmResourceGroupName: 'kubernetes-terraform-rg'
+    backendAzureRmStorageAccountName: 'kstfravimunusamyxyznew'
+    backendAzureRmContainerName: 'kstfravicontainer'
+    backendAzureRmKey: 'terraform-dev.tfstate'
 # - task: TerraformCLI@0
 #   inputs:
 #     command: 'init'
