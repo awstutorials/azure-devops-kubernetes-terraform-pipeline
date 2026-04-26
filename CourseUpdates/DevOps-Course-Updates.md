@@ -5,16 +5,45 @@ When you create a service connection to azure resource manager, the screens chan
 2. Choose the azure subscription from drop down, leave Resource Group Empty, provide the service connection name ![How to create a new service connection](./images/azure-devops-new-azure-resourcemanager-serviceconnection-02.png)
 Also choose Grand access permission to all pipelines and click Save
 
-# 152. Step 03 - Creating Azure DevOps Pipeline for Azure Kubernetes Cluster IAAC - 3:50
-The terraform plug-in no-longer supported so we need to migrate to Microsoft DevLabs terraform plug-in. Almost everything is the same except few small changes.
-1. Choose the Microsoft DevLabs plug-in instead of the plug-in shown in the demo
-![select appropriate Microsoft DevLabs task](./images/terraform-task-selection.png)
-2. Use the same configurations as given in the demo
-![Details for the init configuration](./images/terraform-init-configuration-1.png)
-3. Fill in the storage account details. Please note the storage account has to be created. This new task does not have the feature to create storage account if missing
-![Details for the init configuration](./images/terraform-init-configuration-2.png)
-4. Details for the apply configuration
-![Details for the init configuration](./images/terraform-apply-configuration.png)
+# 152. Step 03 - Creating Azure DevOps Pipeline for Azure Kubernetes Cluster (IAAC)
+
+The Terraform plug-in is no longer supported, so we need to migrate to the Microsoft DevLabs Terraform plug-in. Almost everything is the same except a few small changes.
+
+---
+
+## 1. Choose the Microsoft DevLabs Plug-in
+
+Choose the Microsoft DevLabs plug-in instead of the plug-in shown in the demo.
+
+![Select Microsoft DevLabs task](./images/terraform-task-selection.png)
+
+---
+
+## 2. Use the Same Configuration
+
+Use the same configurations as given in the demo for terraform init.
+
+![Init configuration details](./images/terraform-init-configuration-1.png)
+
+---
+
+## 3. Fill in Storage Account Details.
+
+Fill in the storage account details.
+
+**Note:** The storage account must already be created.  
+This new task does **not** create a storage account if it is missing.
+
+![Storage account configuration](./images/terraform-init-configuration-2.png)
+
+---
+
+## 4. Use the same as given in the demo for terraform apply Configuration
+
+Details for the apply configuration.
+
+![Apply configuration](./images/terraform-apply-configuration.png)
+
 
 # 152. Step 06 - Creating Azure DevOps Pipeline for Deploying Microservice to Azure AKS 1:30
 
