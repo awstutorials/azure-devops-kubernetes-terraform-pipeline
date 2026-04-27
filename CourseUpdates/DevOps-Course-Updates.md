@@ -5,45 +5,219 @@ When you create a service connection to azure resource manager, the screens chan
 2. Choose the azure subscription from drop down, leave Resource Group Empty, provide the service connection name ![How to create a new service connection](./images/azure-devops-new-azure-resourcemanager-serviceconnection-02.png)
 Also choose Grand access permission to all pipelines and click Save
 
-# 152. Step 03 - Creating Azure DevOps Pipeline for Azure Kubernetes Cluster (IAAC)
+# 152. Step 03 - Creating Azure DevOps Pipeline for Azure Kubernetes Cluster IAAC - 3:50
+# Azure DevOps Pipeline Migration - Terraform Tasks
 
-The Terraform plug-in is no longer supported, so we need to migrate to the Microsoft DevLabs Terraform plug-in. Almost everything is the same except a few small changes.
+## Overview
 
----
+The **Azure Pipelines Terraform Tasks by Charles Zipp** extension is no longer available in the Azure DevOps Marketplace.
 
-## 1. Choose the Microsoft DevLabs Plug-in
+The pipeline has been updated to use the **Microsoft DevLabs Terraform Tasks** extension instead.
 
-Choose the Microsoft DevLabs plug-in instead of the plug-in shown in the demo.
-
-![Select Microsoft DevLabs task](./images/terraform-task-selection.png)
-
----
-
-## 2. Use the Same Configuration
-
-Use the same configurations as given in the demo for terraform init.
-
-![Init configuration details](./images/terraform-init-configuration-1.png)
+This guide explains only the changes required for the migration.
 
 ---
 
-## 3. Fill in Storage Account Details.
+## Key Changes
 
-Fill in the storage account details.
-
-**Note:** The storage account must already be created.  
-This new task does **not** create a storage account if it is missing.
-
-![Storage account configuration](./images/terraform-init-configuration-2.png)
+| Old Pipeline | New Pipeline |
+|---|---|
+| `TerraformCLI@0` | `TerraformTask@5` |
+| Charles Zipp Terraform task | Microsoft DevLabs Terraform task |
+| Terraform installer not required | Terraform installer required |
+| `environmentServiceName` | `environmentServiceNameAzureRM` |
+| `ensureBackend: true` | Backend must already exist |
+| Provider not required | `provider: 'azurerm'` required |
 
 ---
 
-## 4. Use the same as given in the demo for terraform apply Configuration
+## Step 1 - Install Microsoft DevLabs Terraform Extension
 
-Details for the apply configuration.
+Install the Microsoft DevLabs Terraform extension in Azure DevOps.
 
-![Apply configuration](./images/terraform-apply-configuration.png)
+```text
+Extension: Terraform Tasks for Azure Pipelines
+Publisher: Microsoft DevLabs
+Marketplace: https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks
+```
 
+---
+
+## Step 2 - Add Terraform Installer Task
+
+Add this task before running any Terraform commands.
+
+```yaml
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+  displayName: 'Install Terraform'
+  inputs:
+    terraformVersion: 'latest'
+```
+
+---
+
+## Step 3 - Replace Old Terraform Task
+
+Old task:
+
+```yaml
+- task: TerraformCLI@0
+```
+
+New task:
+
+```yaml
+- task: TerraformTask@5
+```
+
+---
+
+## Step 4 - Update Terraform Init Task
+
+Use the Microsoft DevLabs `TerraformTask@5` task for Terraform initialization.
+
+```yaml
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/configuration/iaac/azure/kubernetes'
+    backendAzureRmUseEntraIdForAuthentication: false
+    backendServiceArm: 'azure-resource-manager-service-connection'
+    backendAzureRmResourceGroupName: 'kubernetes-terraform-rg'
+    backendAzureRmStorageAccountName: 'storageacctrangaxyz'
+    backendAzureRmContainerName: 'storageacctrangacontainer'
+    backendAzureRmKey: 'terraform_dev.tfstate'
+```
+
+![Details for the init configuration](./images/terraform-init-configuration-1.png)
+
+---
+
+## Step 5 - Create Backend Resources Manually
+
+The old Charles Zipp task supported:
+
+```yaml
+ensureBackend: true
+```
+
+The Microsoft DevLabs task does not create the backend resources automatically.
+
+Before running the pipeline, manually create the following Azure resources:
+
+```text
+Resource Group: kubernetes-terraform-rg
+Storage Account: storageacctrangaxyz
+Blob Container: storageacctrangacontainer
+State File: terraform_dev.tfstate
+```
+
+The state file is created by Terraform, but the resource group, storage account, and container must already exist.
+
+![Details for the init configuration](./images/terraform-init-configuration-2.png)
+
+---
+
+## Step 6 - Update Terraform Apply Task
+
+Use `TerraformTask@5` and replace `environmentServiceName` with `environmentServiceNameAzureRM`.
+
+```yaml
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/configuration/iaac/azure/kubernetes'
+    commandOptions: '-var client_id=$(client_id) -var client_secret=$(client_secret) -var ssh_public_key=$(publickey.secureFilePath)'
+    environmentServiceNameAzureRM: 'azure-resource-manager-service-connection'
+```
+
+![Details for the init configuration](./images/terraform-apply-configuration.png)
+
+---
+
+## Step 7 - Update Terraform Destroy Task
+
+Use the same Microsoft DevLabs task for destroy.
+
+```yaml
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'destroy'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/configuration/iaac/azure/kubernetes'
+    commandOptions: '-var client_id=$(client_id) -var client_secret=$(client_secret) -var ssh_public_key=$(publickey.secureFilePath)'
+    environmentServiceNameAzureRM: 'azure-resource-manager-service-connection'
+```
+
+---
+
+## Complete Updated Pipeline
+
+```yaml
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: echo K8S Terraform Azure!
+  displayName: 'Run a one-line script'
+
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+  displayName: 'Install Terraform'
+  inputs:
+    terraformVersion: 'latest'
+
+- task: DownloadSecureFile@1
+  name: publickey
+  inputs:
+    secureFile: 'azure_rsa.pub'
+
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/configuration/iaac/azure/kubernetes'
+    backendAzureRmUseEntraIdForAuthentication: false
+    backendServiceArm: 'azure-resource-manager-service-connection'
+    backendAzureRmResourceGroupName: 'kubernetes-terraform-rg'
+    backendAzureRmStorageAccountName: 'storageacctrangaxyz'
+    backendAzureRmContainerName: 'storageacctrangacontainer'
+    backendAzureRmKey: 'terraform_dev.tfstate'
+
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/configuration/iaac/azure/kubernetes'
+    commandOptions: '-var client_id=$(client_id) -var client_secret=$(client_secret) -var ssh_public_key=$(publickey.secureFilePath)'
+    environmentServiceNameAzureRM: 'azure-resource-manager-service-connection'
+
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'destroy'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/configuration/iaac/azure/kubernetes'
+    commandOptions: '-var client_id=$(client_id) -var client_secret=$(client_secret) -var ssh_public_key=$(publickey.secureFilePath)'
+    environmentServiceNameAzureRM: 'azure-resource-manager-service-connection'
+```
+
+---
+
+## Summary
+
+To migrate from Charles Zipp Terraform tasks to Microsoft DevLabs Terraform tasks:
+
+1. Install the Microsoft DevLabs Terraform extension.
+2. Add the Terraform installer task.
+3. Replace `TerraformCLI@0` with `TerraformTask@5`.
+4. Add `provider: 'azurerm'`.
+5. Replace `environmentServiceName` with `environmentServiceNameAzureRM`.
+6. Remove `ensureBackend: true`.
+7. Create the backend resource group, storage account, and blob container manually before running the pipeline.
 
 # 152. Step 06 - Creating Azure DevOps Pipeline for Deploying Microservice to Azure AKS 1:30
 
